@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажёр публичных выступлений</title>
+    <script src="https://cdn.tailwindcss.com"></script> 
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"  rel="stylesheet">
+    <style>
+        .speech-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .difficulty-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-4 md:py-8">
+        <!-- Шапка -->
+        <header class="mb-6 md:mb-12 text-center">
+            <h1 class="text-2xl md:text-4xl font-bold text-white mb-2">Тренажёр ораторского мастерства</h1>
+            <p class="text-base md:text-lg text-white max-w-2xl mx-auto px-2">Совершенствуйте свои навыки публичных выступлений с помощью разнообразных упражнений</p>
+        </header>
+        <!-- Основное содержимое -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+            <!-- Колонка 1: Список упражнений -->
+            <div class="md:col-span-2 space-y-6">
+                <div class="bg-gray-800 rounded-xl shadow-md p-4 md:p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-semibold text-white">Мои упражнения</h2>
+                        <button id="addExerciseBtn" onclick="toggleExerciseForm()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center transition hidden">
+                            <i class="fas fa-plus mr-2"></i> Добавить
+                        </button>
+                    </div>
+                    <!-- Форма добавления нового упражнения (скрыта по умолчанию) -->
+                    <div id="exerciseForm" class="hidden mb-6 bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-white mb-3">Новое упражнение</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-white mb-1">Название</label>
+                                <input type="text" id="exerciseTitle" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-white mb-1">Описание</label>
+                                <textarea id="exerciseDescription" rows="3" class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-white"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-white mb-1">Сложность</label>
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="difficulty" value="1" checked class="h-4 w-4 text-gray-500 focus:ring-gray-400">
+                                        <span class="ml-2 text-white">Лёгкое</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="difficulty" value="2" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500">
+                                        <span class="ml-2 text-white">Среднее</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="difficulty" value="3" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500">
+                                        <span class="ml-2 text-white">Сложное</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-white mb-1">Рекомендуемое время (минут)</label>
+                                <input type="number" id="exerciseTime" min="1" value="3" class="w-20 px-3 py-2 bg-gray-600 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-white">
+                            </div>
+                            <div class="flex justify-end space-x-3">
+                                <button onclick="toggleExerciseForm()" class="px-4 py-2 border border-gray-500 rounded-md text-white hover:bg-gray-600 transition">Отмена</button>
+                                <button onclick="addExercise()" class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition">Добавить</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Список упражнений -->
+                    <div id="exercisesList" class="space-y-3 md:space-y-4 overflow-y-auto max-h-[70vh] md:max-h-none">
+                        <!-- Упражнения будут добавляться сюда -->
+                    </div>
+                </div>
+            </div>
+            <!-- Колонка 2: Таймер -->
+            <div class="space-y-6">
+                <!-- Таймер -->
+                <div class="bg-gray-800 rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-semibold text-white mb-4">Готовы выступать?</h2>
+                    <div class="flex flex-col items-center">
+                        <div class="relative mb-6">
+                            <svg id="timerCircle" class="w-64 h-64 -rotate-90">
+                                <circle cx="50%" cy="50%" r="80" fill="none" stroke="#2D3748" stroke-width="12"></circle>
+                                <circle id="timerProgress" cx="50%" cy="50%" r="80" fill="none" stroke="#4299E1" stroke-width="12" stroke-dasharray="502.4" stroke-dashoffset="0"></circle>
+                            </svg>
+                            <div id="timerDisplay" class="absolute inset-0 flex items-center justify-center flex-col">
+                                <div class="text-4xl md:text-5xl font-bold text-white mb-1">03:00</div>
+                                <div class="text-sm text-white">осталось</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2 md:space-x-3">
+                            <button id="startTimer" onclick="startTimer()" class="px-4 py-1 md:px-6 md:py-2 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition flex items-center text-sm md:text-base">
+                                <i class="fas fa-play mr-2"></i> Старт
+                            </button>
+                            <button id="pauseTimer" onclick="pauseTimer()" class="px-6 py-2 bg-gray-700 border border-gray-600 text-white rounded-full hover:bg-gray-600 transition flex items-center hidden">
+                                <i class="fas fa-pause mr-2"></i> Пауза
+                            </button>
+                            <button onclick="resetTimer()" class="px-6 py-2 bg-gray-700 border border-gray-600 text-white rounded-full hover:bg-gray-600 transition flex items-center">
+                                <i class="fas fa-redo mr-2"></i> Сброс
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Текущее упражнение -->
+                <div id="currentExercise" class="bg-gray-800 rounded-xl shadow-md p-6 hidden">
+                    <h2 class="text-2xl font-semibold text-white mb-2">Сейчас выступаете:</h2>
+                    <h3 id="currentExerciseTitle" class="text-xl font-medium text-white mb-2"></h3>
+                    <p id="currentExerciseDesc" class="text-white mb-3"></p>
+                    <div class="flex items-center text-sm">
+                        <span class="text-white mr-2">Сложность:</span>
+                        <div id="currentExerciseDiff"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Инициализация данных
+        let exercises = [
+            {
+                id: 1,
+                title: "Загадочный предмет",
+                description: "Возьмите случайный предмет и расскажите о нём 3 минуты, придумывая ему необычные свойства и историю.",
+                difficulty: 2,
+                time: 3,
+                completed: false
+            },
+            {
+                id: 2,
+                title: "Спонтанная речь", 
+                description: "Выберите случайное слово из словаря и сразу начинайте говорить на эту тему в течение 2 минут.",
+                difficulty: 1,
+                time: 2,
+                completed: false
+            },
+            {
+                id: 3,
+                title: "Вдохновляющая речь",
+                description: "Подготовьте 5-минутную мотивационную речь на тему, которая вам близка.",
+                difficulty: 3,
+                time: 5,
+                completed: false
+            }
+        ];
+        let timerInterval;
+        let timeLeft = 180; // 3 минуты по умолчанию (в секундах)
+        let isTimerRunning = false;
+        let currentExerciseId = null;
+        // DOM элементы
+        const exercisesList = document.getElementById('exercisesList');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerCircle = document.getElementById('timerCircle');
+        const startTimerBtn = document.getElementById('startTimer');
+        const pauseTimerBtn = document.getElementById('pauseTimer');
+        const currentExerciseDiv = document.getElementById('currentExercise');
+        const currentExerciseTitle = document.getElementById('currentExerciseTitle');
+        const currentExerciseDesc = document.getElementById('currentExerciseDesc');
+        const currentExerciseDiff = document.getElementById('currentExerciseDiff');
+        // Админский режим (true - администратор, false - обычный пользователь)
+        const isAdminMode = true; // Переключите на false для обычных пользователей
+        // Инициализация страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            renderExercises();
+            updateTimerDisplay();
+            // Показать кнопку добавления только для админа
+            if (isAdminMode) {
+                document.getElementById('addExerciseBtn').classList.remove('hidden');
+            }
+        });
+        // Отображение списка упражнений
+        function renderExercises() {
+            // Скрыть форму добавления если не админ
+            if (!isAdminMode) {
+                document.getElementById('exerciseForm').classList.add('hidden');
+            }
+            exercisesList.innerHTML = '';
+            exercises.forEach(exercise => {
+                const difficultyDots = getDifficultyDots(exercise.difficulty);
+                const completedClass = exercise.completed ? 'border-blue-600 bg-gray-700' : 'border-blue-500 bg-gray-700';
+                const completedIcon = exercise.completed ? 
+                    '<i class="fas fa-check-circle text-green-500 mr-1"></i>' : '';
+                const exerciseCard = document.createElement('div');
+                exerciseCard.className = `speech-card border-2 border-blue-500 rounded-lg p-4 ${completedClass} transition cursor-pointer hover:shadow-md hover:border-blue-600`;
+                exerciseCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-lg text-white">${completedIcon}${exercise.title}</h3>
+                            <p class="text-white text-sm mt-1">${exercise.description}</p>
+                        </div>
+                        <span class="text-sm font-medium px-2 py-1 bg-gray-300 text-black rounded-full">${exercise.time} мин</span>
+                    </div>
+                    <div class="mt-3 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs text-white mr-2">Сложность:</span>
+                            ${difficultyDots}
+                        </div>
+                        <div>
+                            <button onclick="startExercise(${exercise.id}, event)" class="text-xs bg-green-700 hover:bg-green-600 text-white px-3 py-1 rounded-md mr-2">
+                                Начать
+                            </button>
+                            <button onclick="deleteExercise(${exercise.id}, event)" class="text-xs bg-red-900 hover:bg-red-800 text-white px-3 py-1 rounded-md">
+                                <i class="fas fa-trash-alt mr-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                exercisesList.appendChild(exerciseCard);
+            });
+        }
+        // Получить индикатор сложности
+        function getDifficultyDots(difficulty) {
+            let dots = '';
+            for (let i = 1; i <= 3; i++) {
+                const color = i <= difficulty ? 
+                    (difficulty === 1 ? 'bg-gray-400' : difficulty === 2 ? 'bg-gray-500' : 'bg-gray-700') : 
+                    'bg-gray-300';
+                dots += `<span class="difficulty-dot ${color}"></span>`;
+            }
+            return dots;
+        }
+        // Показать/скрыть форму добавления упражнения
+        function toggleExerciseForm() {
+            if (!isAdminMode) return;
+            const form = document.getElementById('exerciseForm');
+            form.classList.toggle('hidden');
+        }
+        // Добавить новое упражнение
+        function addExercise() {
+            if (!isAdminMode) return;
+            const title = document.getElementById('exerciseTitle').value.trim();
+            const description = document.getElementById('exerciseDescription').value.trim();
+            const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+            const time = parseInt(document.getElementById('exerciseTime').value) || 3;
+            if (!title) {
+                alert('Пожалуйста, введите название упражнения');
+                return;
+            }
+            const newExercise = {
+                id: exercises.length > 0 ? Math.max(...exercises.map(e => e.id)) + 1 : 1,
+                title,
+                description,
+                difficulty: parseInt(difficulty),
+                time,
+                completed: false
+            };
+            exercises.unshift(newExercise);
+            renderExercises();
+            toggleExerciseForm();
+            // Очистить форму
+            document.getElementById('exerciseTitle').value = '';
+            document.getElementById('exerciseDescription').value = '';
+            document.getElementById('exerciseTime').value = '3';
+        }
+        // Удалить упражнение
+        function deleteExercise(id, event) {
+            event.stopPropagation();
+            if (confirm('Вы уверены, что хотите удалить это упражнение?')) {
+                exercises = exercises.filter(ex => ex.id !== id);
+                renderExercises();
+            }
+        }
+        // Начать выполнение упражнения
+        function startExercise(id, event) {
+            if (event) event.stopPropagation();
+            const exercise = exercises.find(ex => ex.id === id);
+            if (!exercise) return;
+            currentExerciseId = id;
+            timeLeft = exercise.time * 60;
+            updateTimerDisplay();
+            // Обновить UI текущего упражнения
+            currentExerciseTitle.textContent = exercise.title;
+            currentExerciseDesc.textContent = exercise.description;
+            currentExerciseDiff.innerHTML = getDifficultyDots(exercise.difficulty) + 
+                `<span class="ml-2 text-white">${getDifficultyText(exercise.difficulty)}</span>`;
+            currentExerciseDiv.classList.remove('hidden');
+            // Прокрутить к таймеру
+            document.getElementById('timerCircle').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+        function getDifficultyText(difficulty) {
+            switch(difficulty) {
+                case 1: return 'Лёгкое';
+                case 2: return 'Среднее';
+                case 3: return 'Сложное';
+                default: return '';
+            }
+        }
+        // Таймер
+        function startTimer() {
+            if (isTimerRunning) return;
+            if (timeLeft <= 0) {
+                resetTimer();
+            }
+            isTimerRunning = true;
+            startTimerBtn.classList.add('hidden');
+            pauseTimerBtn.classList.remove('hidden');
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    isTimerRunning = false;
+                    startTimerBtn.classList.remove('hidden');
+                    pauseTimerBtn.classList.add('hidden');
+                    // Пометить упражнение как выполненное
+                    if (currentExerciseId) {
+                        const exercise = exercises.find(ex => ex.id === currentExerciseId);
+                        if (exercise) {
+                            exercise.completed = true;
+                            renderExercises();
+                        }
+                    }
+                    // Воспроизвести звук завершения
+                    playCompletionSound();
+                }
+            }, 1000);
+        }
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            startTimerBtn.classList.remove('hidden');
+            pauseTimerBtn.classList.add('hidden');
+        }
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            if (currentExerciseId) {
+                const exercise = exercises.find(ex => ex.id === currentExerciseId);
+                if (exercise) {
+                    timeLeft = exercise.time * 60;
+                }
+            } else {
+                timeLeft = 180; // 3 минуты по умолчанию
+            }
+            updateTimerDisplay();
+            startTimerBtn.classList.remove('hidden');
+            pauseTimerBtn.classList.add('hidden');
+        }
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.querySelector('div:first-child').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            // Обновление круга прогресса
+            let totalSeconds = 180; // 3 минуты по умолчанию
+            if (currentExerciseId) {
+                const exercise = exercises.find(ex => ex.id === currentExerciseId);
+                if (exercise) totalSeconds = exercise.time * 60;
+            }
+            const circumference = 2 * Math.PI * 80;
+            const percent = (timeLeft / totalSeconds) * circumference;
+            document.getElementById('timerProgress').style.strokeDasharray = circumference;
+            document.getElementById('timerProgress').style.strokeDashoffset = percent;
+        }
+        function playCompletionSound() {
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3'); 
+            audio.play().catch(e => console.log('Не удалось воспроизвести звук:', e));
+        }
+    </script>
+</body>
+</html>
